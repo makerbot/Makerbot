@@ -16,13 +16,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
-"""Frosterize.py
+"""Plotterize.py
 
-Generates GCode which from an image (JPEG, GIF, PNG, etc.) for printing with the Frostruder.
+Generates GCode which from an image (JPEG, GIF, PNG, etc.) for printing with the Unicorn.
 
-More info at: http://wiki.makerbot.com/frosterize
+More info at: http://wiki.makerbot.com/plotterize
 
-Usage: python frosterize.py [options] file > output.gcode
+Usage: python plotterize.py [options] file > output.gcode
 
 Options:
   -h, --help						show this help
@@ -48,7 +48,7 @@ from PIL import Image
 from PIL import ImageOps
 from PIL import ImageEnhance
 
-class Frosterizer:
+class Plotterizer:
 	"Class to handle generating frosting code."
 	def __init__(self, img_path, z_feedrate, z_height, xy_feedrate, width, height, start_delay, stop_delay, dot_delay, line_width, border, stop_distance, invert):
 
@@ -136,7 +136,7 @@ class Frosterizer:
 	def generate(self):
 		"Generate the actual GCode"
 		
-		print "(Frosterized version of %s)" % (self.file)
+		print "(Plotterized version of %s)" % (self.file)
 		print "(Size: %.2fmm x %.2fmm / %.2f PBI [Peanut Butter Inch])" % (self.width, self.height, self.pbi)
 		print "(Call:", " ".join(sys.argv), ")"
 		print "G21 (metric ftw)"
@@ -183,7 +183,7 @@ class Frosterizer:
 						actual_end = self.x_pixel_to_point(end)
 
 						print "(line from %.2f to %.2f at %.2f)" % (actual_start, actual_end, actual_y)
-						self.go_to_point(actual_start, actual_y, self.z_height, 3500) #modified feedrate
+						self.go_to_point(actual_start, actual_y, self.z_height, 3500) #fast feedrate
 						print "M300 S40 (pen down)"
 						print "G4 P%d (wait %dms)" % (self.start_delay, self.start_delay)
 						
@@ -203,7 +203,6 @@ class Frosterizer:
 						
 						print "(dot at %.2f, %.2f)" % (actual_x, actual_y)
                                                 self.go_to_point(actual_x, actual_y, self.z_height, self.xy_feedrate)
-						#self.go_fast_to_point(actual_x, actual_y, self.z_height, self.xy_feedrate)
 						print "M300 S40 (pen down)"
 						print "G4 P%d (wait %dms)" % (self.dot_delay, self.dot_delay)
 						print "M300 S50 (pen up)"
@@ -298,7 +297,7 @@ def main(argv):
 		elif opt in ("--invert"):
 			invert = True
 		
-	frosty = Frosterizer(argv[-1], z_feedrate, z_height, xy_feedrate, width, height, start_delay, stop_delay, dot_delay, line_width, border, stop_distance, invert)
+	frosty = Plotterizer(argv[-1], z_feedrate, z_height, xy_feedrate, width, height, start_delay, stop_delay, dot_delay, line_width, border, stop_distance, invert)
 	frosty.generate()
 
 def usage():

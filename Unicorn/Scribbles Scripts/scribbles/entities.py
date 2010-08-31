@@ -12,10 +12,7 @@ class Line(Entity):
 		"Emit gcode for drawing line"
 		context.codes.append("(" + str(self) + ")")
 		context.go_to_point(self.start[0],self.start[1])
-		#context.start()
-		#context.go_to_point(self.end[0],self.end[1])
 		context.draw_to_point(self.end[0],self.end[1])
-		#context.stop()
 		context.codes.append("")
 
 class Circle(Entity):
@@ -65,11 +62,13 @@ class Arc(Entity):
 		context.codes.append("")
         
 class Ellipse(Entity):
+        #NOT YET IMPLEMENTED
 	def __str__(self):
 		return "Ellipse at [%.2f, %.2f], major [%.2f, %.2f], minor/major %.2f" + " start %.2f end %.2f" % \
 		(self.center[0], self.center[1], self.major[0], self.major[1], self.minor_to_major, self.start_param, self.end_param)
 
 class PolyLine(Entity):
+        #NOT YET IMPLEMENTED
 	def __str__(self):
 		return "Polyline consisting of segments:\n" + map(lambda x:"[%.2f, %.2f] "%x,self.segments)
 

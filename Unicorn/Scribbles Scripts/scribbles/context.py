@@ -2,7 +2,7 @@ from math import *
 import sys
 
 class GCodeContext:
-    def __init__(self, z_feedrate, z_height, xy_feedrate, start_delay, stop_delay, line_width, stop_distance, file):
+    def __init__(self, z_feedrate, z_height, xy_feedrate, start_delay, stop_delay, line_width, file):
         
 	self.z_feedrate = z_feedrate
 	self.z_height = z_height
@@ -10,7 +10,6 @@ class GCodeContext:
 	self.start_delay = start_delay
 	self.stop_delay = stop_delay
 	self.line_width = line_width
-	self.stop_distance = stop_distance
 	self.file = file
 	
 	self.drawing = False
@@ -23,7 +22,7 @@ class GCodeContext:
 	print "G21 (metric ftw)"
 	print "G90 (absolute mode)"
 	print "G92 X0 Y0 Z0 (zero all axes)"
-	print "G92 Z0.25 F150.00 (go up to printing level)"
+	print "G92 Z%0.2F F150.00 (go up to printing level)" %self.z_height
 	print
 
 	for line in self.codes:
@@ -52,44 +51,17 @@ class GCodeContext:
         if self.last == (x,y):
             return
         if stop:
-		#distance = sqrt(pow(self.last[0] - x, 2) + pow(self.last[1] - y, 2))
-
-		#if (distance >= self.stop_distance):
-			#pre_ratio = (distance - self.stop_distance) / distance
-			
-			#x_distance = abs(self.last[0]-x)
-			#if (x > self.last[0]):
-				#x_pre = self.last[0] + x*pre_ratio
-			#else:
-				#x_pre = self.last[0] - x*pre_ratio
-			
-			#y_distance = abs(self.last[1]-y)
-			#if (y > self.last[1]):
-				#y_pre = self.last[1] + y*pre_ratio
-			#else:
-				#y_pre = self.last[1] - y*pre_ratio
-
-			#self.codes.append("G1 X%.2f Y%.2f F%.2f" % (x_pre, y_pre, self.xy_feedrate))
-			#self.codes.append("M300 S50 (pen up)")
-			#self.codes.append("G1 X%.2f Y%.2f F%.2f" % (x, y, self.xy_feedrate))
-		#else:
-			#self.codes.append("G1 X%.2f Y%.2f F%.2f" % (x, y, self.xy_feedrate))
-			#self.codes.append("M300 S50 (pen up)")
-		#self.codes.append("G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay))
-		#self.codes.append("")
-            	#self.drawing = False
-                return #added
+                return
         else:
-                if self.drawing: #added
-                    self.codes.append("M300 S50 (pen up)") #added
-                    self.codes.append("G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay)) #added
-                    self.drawing = False #added
+                if self.drawing: 
+                    self.codes.append("M300 S50 (pen up)") 
+                    self.codes.append("G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay))
+                    self.drawing = False
                     
 		self.codes.append("G1 X%.2f Y%.2f F%.2f" % (x,y, self.xy_feedrate))
 
 	self.last = (x,y)
 	
-    ##Everything below is added
     def draw_to_point(self, x, y, stop=False):
         if self.last == (x,y):
             return
