@@ -63,7 +63,7 @@ def getXYZ(layer,segment):
     r = rBottomMm + (rDeltaPerLayer*layer)
     angle = anglePerSegment * segment
     z = layerHeight * layer
-    x = math.sin(angle) * r
+    x = -math.sin(angle) * r
     y = math.cos(angle) * r
     return (x,y,z)
 
