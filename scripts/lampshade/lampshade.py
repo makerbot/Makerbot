@@ -110,7 +110,7 @@ if len(args) != 1:
     exit()
 
 
-layerHeight = 0.30
+layerHeight = 0.31
 rBottomMm = options.rbot
 rTopMm = options.rtop
 heightMm = options.height
@@ -118,7 +118,7 @@ feedrateInMmPerS = options.feedrate
 if options.radius:
     rBottomMm = options.radius
     rTopMm = options.radius
-maxAdjustment = 0.52
+maxAdjustment = 0.49
 
 im = Image.open(args[0]).convert("L")
 pixels = im.load()
