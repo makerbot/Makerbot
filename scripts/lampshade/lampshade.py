@@ -1,18 +1,9 @@
 #!/usr/bin/python
+
+from optparse import OptionParser
 import math
 import sys
 import Image
-
-im = Image.open(sys.argv[1]).convert("L")
-pixels = im.load()
-
-layerHeight = 0.33
-
-rBottomMm = 30.0
-rTopMm = 30.0
-heightMm = 40.0
-
-segments = max(20,im.size[0])
 
 prefix = """
 (Cupcake ABS default skeinforge profile)
@@ -41,17 +32,16 @@ G91
 G1 Z10
 """
 
-feedrateInMmPerS = 34.5
-
-maxAdjustment = 0.4
 
 # Do not edit
 
-layerCount = heightMm / layerHeight
-rDeltaPerLayer = (rTopMm - rBottomMm)/layerCount
-anglePerSegment = 2*math.pi/segments
-
-baseFeedrate = feedrateInMmPerS * 60.0
+def init():
+    global layerCount, rDeltaPerLayer, anglePerSegment
+    global baseFeedrate
+    layerCount = heightMm / layerHeight
+    rDeltaPerLayer = (rTopMm - rBottomMm)/layerCount
+    anglePerSegment = 2*math.pi/segments
+    baseFeedrate = feedrateInMmPerS * 60.0
 
 def getXYZ(layer,segment):
     r = rBottomMm + (rDeltaPerLayer*layer)
@@ -62,7 +52,8 @@ def getXYZ(layer,segment):
     return (x,y,z)
 
 def makeSegment(layer, segment, value, earlyShutoff = 0):
-    feedrate = baseFeedrate * ((value * maxAdjustment) + ((1.0-value)*1.0))
+    invvalue = 1.0-value
+    feedrate = baseFeedrate * ((invvalue * maxAdjustment) + value)
     start = getXYZ(layer, segment-1)
     end = getXYZ(layer,segment)
     return "G1 X%f Y%f Z%f F%f" % (end[0],end[1],end[2],feedrate)
@@ -73,10 +64,49 @@ def makeShape():
     for layer in range(0,int(layerCount)):
         for segment in range(0, segments):
             x = segment
-            y = int(float(im.size[1]*layer)/layerCount)
+            y = (im.size[1] - int(float(im.size[1]*layer)/layerCount)) - 1
             print makeSegment(layer, segment, pixels[x,y]/256.0)
     print "M103"
     print suffix
 
 
+usage = "usage: %prog [options] image.png"
+parser = OptionParser(usage = usage)
+parser.add_option("-r","--radius",type="float",dest="radius",
+                  help="set the top and bottom radius of a right cylinder")
+parser.add_option("--rtop",type="float",dest="rtop", 
+                  help="set the top radius of a conical shade",
+                  default=30.0)
+parser.add_option("--rbot",type="float",dest="rbot",
+                  help="set the bottom radius of a conical shade",
+                  default=30.0)
+parser.add_option("-H","--height",type="float",dest="height",
+                  help="set the height of the shade",
+                  default=40.0)
+parser.add_option("-f","--feedrate",type="float",dest="feedrate",
+                  help="set the base feedrate",
+                  default=34.5)
+(options,args) = parser.parse_args()
+
+if len(args) != 1:
+    print "Please provide exactly one filename as an argument."
+    parser.print_help()
+    exit()
+
+
+layerHeight = 0.30
+rBottomMm = options.rbot
+rTopMm = options.rtop
+heightMm = options.height
+feedrateInMmPerS = options.feedrate
+if options.radius:
+    rBottomMm = options.radius
+    rTopMm = options.radius
+maxAdjustment = 0.52
+
+im = Image.open(args[0]).convert("L")
+pixels = im.load()
+segments = max(20,im.size[0])
+
+init()
 makeShape()
