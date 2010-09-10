@@ -54,15 +54,19 @@ G1 Z10
 def init():
     global layerCount, rDeltaPerLayer, anglePerSegment
     global baseFeedrate
+    global segments
     layerCount = heightMm / layerHeight
     rDeltaPerLayer = (rTopMm - rBottomMm)/layerCount
     anglePerSegment = 2*math.pi/segments
     baseFeedrate = feedrateInMmPerS * 60.0
 
 def getXYZ(layer,segment):
+    global continuous
     r = rBottomMm + (rDeltaPerLayer*layer)
     angle = anglePerSegment * segment
     z = layerHeight * layer
+    if continuous:
+        z = z + (layerHeight * (float(segment)/segments))
     x = -math.sin(angle) * r
     y = math.cos(angle) * r
     return (x,y,z)
@@ -99,6 +103,9 @@ parser.add_option("--rbot",type="float",dest="rbot",
 parser.add_option("-H","--height",type="float",dest="height",
                   help="set the height of the shade",
                   default=40.0)
+parser.add_option("-c","--continuous",action="store_true",dest="continuous",
+                  help="use continuous Z movement",
+                  default=False)
 parser.add_option("-f","--feedrate",type="float",dest="feedrate",
                   help="set the base feedrate",
                   default=34.5)
@@ -119,7 +126,7 @@ if options.radius:
     rBottomMm = options.radius
     rTopMm = options.radius
 maxAdjustment = 0.49
-
+continuous = options.continuous
 im = Image.open(args[0]).convert("L")
 pixels = im.load()
 segments = max(20,im.size[0])
