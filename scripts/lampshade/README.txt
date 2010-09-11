@@ -25,5 +25,12 @@ python ./lampshade.py -r 30 -H 60 patterns/fleur.png >patterns/fleur.gcode
 
 python /lampshade.py -r 30 -H 80 patterns/tiles.png >patterns/tiles.gcode
 
+These gcodes will generate a small "seam" along one edge of the
+printed object.  If you want to do a "seamless" print, just add the
+"-c" flag to the command line.  A word of warning: "seamless" prints
+will probably not work correctly in versions of ReplicatorG earlier
+than 0019 (small, discontinuous seams will be generated all around the
+object!).
+
 Good luck, and have fun!
 -a
