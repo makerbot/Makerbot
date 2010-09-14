@@ -94,6 +94,9 @@ usage = "usage: %prog [options] image.png"
 parser = OptionParser(usage = usage)
 parser.add_option("-r","--radius",type="float",dest="radius",
                   help="set the top and bottom radius of a right cylinder")
+parser.add_option("-l","--layerheight",type="float",dest="layerheight",
+                  help="set the height of a single layer, in mm",
+                  default=0.33)
 parser.add_option("--rtop",type="float",dest="rtop", 
                   help="set the top radius of a conical shade",
                   default=30.0)
@@ -116,10 +119,9 @@ if len(args) != 1:
     parser.print_help()
     exit()
 
-
-layerHeight = 0.31
 rBottomMm = options.rbot
 rTopMm = options.rtop
+layerHeight = options.layerheight
 heightMm = options.height
 feedrateInMmPerS = options.feedrate
 if options.radius:
