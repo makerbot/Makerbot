@@ -72,6 +72,7 @@ class GerberConstants:
     ad_rectangle  = "R"
     ad_oval       = "O"
     ad_polygon    = "P"
+    ad_macro      = "8"
     
 
     def __init__():

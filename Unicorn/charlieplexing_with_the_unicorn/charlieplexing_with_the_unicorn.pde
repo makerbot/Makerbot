@@ -1,10 +1,10 @@
 int blinkdelay = 500; //This basically controls brightness. Lower is dimmer
 int runspeed = 50;   //smaller = faster
 
-int pad1 = 10;
-int pad2 = 11;
-int pad3 = 12;
-int pad4 = 13;
+int pad1 = 14;
+int pad2 = 15;
+int pad3 = 16;
+int pad4 = 17;
 
 const int ledMap[12][2] = {{pad4, pad3}, {pad3, pad4}, {pad4, pad1},
 {pad1, pad4}, {pad4, pad2}, {pad2, pad4}, {pad2, pad3}, {pad3, pad2}, 
@@ -67,8 +67,8 @@ void turnOn(int led) {
 }
 
 void allOff() {
-  PORTB = B00000000;
-  DDRB = B00000000; 
+  PORTC = B00000;
+  DDRC = B00000; 
 }
 
 void blinkall(int numblink) {

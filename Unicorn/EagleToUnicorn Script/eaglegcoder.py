@@ -6,13 +6,13 @@ def main():
     usage = "usage: %prog [options] filename > output.gcode"
     
     parser = OptionParser(usage)
-    parser.add_option("--feedrate", dest="feed_rate", default=2000,
+    parser.add_option("--feedrate", dest="feed_rate", default=700,
                       help="x and y feedrate")
-    parser.add_option("--servoup", dest="servo_up", default=50,
+    parser.add_option("--servoup", dest="servo_up", default=40,
                       help="servo's up position")
-    parser.add_option("--servodown", dest="servo_down", default=40,
+    parser.add_option("--servodown", dest="servo_down", default=30,
                       help="servo's down position")
-    parser.add_option("--linewidth", dest = "line_width", default=0.3,
+    parser.add_option("--linewidth", dest = "line_width", default=0.02,
                       help="line width of pen")
     parser.add_option("--startdelay", dest = "start_delay", default=50,
                       help="delay after putting pen down")
