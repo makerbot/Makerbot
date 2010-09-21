@@ -491,7 +491,7 @@ class Gerber():
                         self.apature_def.Y_hole_dim = apature_mods[4] 
                         
                 self.apature_definitions[self.apature_def.d_code] =  self.apature_def
-                #self.apature_def.macro = self.apature_macros[self.am_name]
+                #self.apature_def.macro = self.apature_macros[ the macro name goes here ]
  
                 
             if( command_type == GerberConstants.p_layer_polarity ):
@@ -1060,18 +1060,12 @@ class Gerber():
                     if( gerber_command.command.d == GerberConstants.d_flash_aperature ):
                         if apature_def.apature_type == "R" :
                             print "(RECTANGLE)"
-                            #self.output_rectangle_GCODE(float(current_x_pos), float(current_y_pos), 
-                            #                            apature_def.X_dim, apature_def.Y_dim, 
-                            #                            apature_def.X_hole_dim, apature_def.Y_hole_dim)
                             self.output_rect_fill_GCODE(float(current_x_pos), float(current_y_pos), 
                                                         apature_def.X_dim, apature_def.Y_dim, 
                                                         apature_def.X_hole_dim, apature_def.Y_hole_dim)
                             
                         if apature_def.apature_type == "C" :
                             print "(CIRCLE)"
-                            #self.output_circle_GCODE(float(current_x_pos), float(current_y_pos), 
-                            #                            apature_def.outside_diameter,
-                            #                            apature_def.X_hole_dim, apature_def.Y_hole_dim)
                             self.output_circle_fill_GCODE(float(current_x_pos), float(current_y_pos), 
                                                         apature_def.outside_diameter,
                                                         apature_def.X_hole_dim, apature_def.Y_hole_dim)
@@ -1083,17 +1077,12 @@ class Gerber():
                                                    apature_def.X_hole_dim, apature_def.Y_hole_dim)
                             
                         
-                        if apature_def.macro = self.apature_macros["OC8"]
-                        # 
-                        #
-                        # this is to catch the OC8 macro    
-                        #if apature_def.apature_type == "8" : #really crappy solution
+                        #if apature_def.macro = self.apature_macros["OC8"]
                         #    print "(AM POLYGON)"
                         #    self.output_polygon_GCODE(float(current_x_pos), float(current_y_pos),
                         #                              float(self.apature_macro.vertices), float(apature_def.outside_diameter),
                         #                              float(self.apature_macro.rotation))
-                            #the diameter parameter of the aperture macro is formatted like 1.08239X$1 where $1 represents
-                            #the apature_def.outside_diameter. I don't know what the 1.08239 means.
+                           
                             
                 
             if( gerber_command.command_type == "g" ):
