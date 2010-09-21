@@ -1111,6 +1111,7 @@ class Gerber():
                     print "M300 S%d (pen up)" %self.servo_up
                     print "G4 P500"
                     print "G1 X0 Y0 F3500.00 (end of program, go home)"
+                    print "M300 S255 (turn off servo)"
                         
                         
                 
