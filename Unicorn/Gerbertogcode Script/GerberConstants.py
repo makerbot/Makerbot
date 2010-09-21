@@ -73,6 +73,18 @@ class GerberConstants:
     ad_oval       = "O"
     ad_polygon    = "P"
     ad_macro      = "8"
+   
+    #apature macro block types
+    am_circle = "1"
+    am_line_vector_alt  = "20"
+    am_line_vector = "2"
+    am_line_center = "21"
+    am_line_lower_left = "22"
+    am_eof = "3"
+    am_outline = "4"
+    am_polygon = "5" 
+    am_morie = "6" 
+    am_thermal = "7" 
     
 
     def __init__():
