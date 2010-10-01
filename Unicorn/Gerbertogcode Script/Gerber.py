@@ -39,22 +39,111 @@ class GerberApatureDefintion():
 ###################################
 #
 ###################################  
-#added
+class GerberApatureCircle():
+    def __init__(self):
+        self.exposure = None
+        self.diameter = None
+        self.x_center = None
+        self.y_center = None
+        
+        
+###################################
+#
+###################################  
+
+class GerberApatureLine():
+    def __init__(self):
+        self.exposure = None
+        self.line_width = None
+        self.x_start = None
+        self.y_start = None
+        self.x_end = None
+        self.y_end = None
+        self.width = None
+        self.height = None
+        self.x_center = None
+        self.y_center = None
+        self.rotation = None 
+        
+###################################
+#
+###################################  
+
+class GerberApatureOutline():
+    def __init__(self):
+        self.exposure = None
+        self.point_count = None
+        self.x_start = None
+        self.y_start = None
+        self.points = []
+        self.rotation = None
+    
+##################################
+#
+##################################
+class GerberPoint():
+    def __init__(self):
+        self.x = None
+        self.y = None 
+###################################
+#
+###################################  
+
+class GerberApaturePolygon():
+    def __init__(self):
+        self.vertice_count = None
+        self.x_center = None
+        self.y_center = None
+        self.diameter = None
+        self.rotation = None
+        
+###################################
+#
+###################################  
+
+class GerberApatureMorie():
+    def __init__(self):
+        self.x_center = None
+        self.y_center = None
+        self.outside_diameter = None
+        self.line_thickness = None 
+        self.gap_thickness = None
+        self.number_of_circles = None
+        self.cross_hair_thickness = None
+        self.cross_hair_length = None
+        self.rotation = None
+###################################
+#
+###################################  
+
+class GerberApatureThermal():
+    def __init__(self):
+        self.x_center = None
+        self.y_center = None
+        self.outside_diameter = None
+        self.inside_diameter = None
+        self.cross_hair_thickness = None
+        self.rotation = None
+        
+
+###################################
+#
+###################################  
+       
+class GerberApatureBlock(): 
+    def __init__(self): 
+        self.block_type = None
+        self.data = None
+     
+###################################
+#
+###################################  
+ 
 class GerberApatureMacro():
     def __init__(self):
-        self.am_code = None # = OC8 in this case and is just the name of the aperture macro
-        self.X_dim  = None
-        self.X_hole_dim = None
-        self.Y_dim  = None
-        self.Y_hole_dim = None 
-        self.X_center = None
-        self.Y_center = None
-        self.am_type = None # = "5," in this case and specifies a regular polygon
-        self.diameter = None
-        self.vertices = None
-        self.onoff = None
-        self.rotation = None
-         
+        self.am_name = None 
+        self.am_blocks = [] 
+        
 ###################################
 #
 ################################### 
@@ -64,7 +153,6 @@ class GerberAxisSelectCommand():
         self.A = None 
         self.B = None
 
-         
 ###################################
 #
 ###################################  
@@ -176,6 +264,7 @@ class Gerber():
      
         self.gerber_commands = [] 
         self.apature_definitions = {}
+        self.apature_macros = {} 
  
     ###################################
     #
@@ -239,28 +328,41 @@ class Gerber():
         if( self.file != None):
             
             for line in self.file:
-                line = line.strip() 
-                if(len(line) == 0):
+                command_line = line.strip() 
+               
+                if( len( command_line ) == 0 ):
                     continue
            
-                if(multiline == False):
-                    previous_line = line
+                if( multiline == False ):
+                    previous_line = command_line
                 else:
-                    previous_line += line
-                    line = previous_line #added to let multilines get parsed properly
+                    previous_line += command_line
+                    command_line = previous_line 
                 
-                command_type = line[0]
-                command_data = line[1:]
+                command_type = command_line[0]
+                command_data = command_line[1:]
                 parsed_gerber_commands = []
                 
                 if( command_type == GerberConstants.g_code ):
                     parsed_gerber_commands = self.parse_general( self.split_commands( command_data ) )
                  
                 if( command_type == GerberConstants.p_code ): 
-                    if(line[len(line) -1] == GerberConstants.p_code):
+                    
+                    if( command_line[ len( command_line ) -1] == GerberConstants.p_code ):
                         multiline = False
-                        command_data = previous_line.strip("%")
-                        parsed_gerber_commands = self.parse_parameter( self.split_commands( command_data ) )
+                        command_data = command_line.strip("%")
+                       
+                        ###
+                        # Macros require different parsing than normal multiline Gerber commands 
+                        # BUG: This will break if a macro is embedded inside of another parameter 
+                        #       multiline command ex. %LF*%*%AM*%  I'm not sure that is even valid
+                        #       according to the spec. 
+                        
+                        if( len( command_data ) > 3 ):
+                            if( command_data[ 0:2 ] == GerberConstants.p_apature_macro ):
+                                self.parse_macros( command_data ) 
+                            else: 
+                                parsed_gerber_commands = self.parse_parameter( self.split_commands( command_data ) )
                     else:
                         multiline = True
                         continue
@@ -295,7 +397,6 @@ class Gerber():
                 
         return cleaned_commands 
     
-    
                      
     ###################################
     #
@@ -303,10 +404,13 @@ class Gerber():
 
     def parse_parameter( self, commands ):
         
-        am_command = False #added
         gerber_commands = []
         
         for command in commands:
+            
+            if( len(command) < 3):
+                continue
+            
             gerber_command = GerberCommand("p")
             command_type = command[0:2]
             command_data = command[2:]
@@ -386,42 +490,15 @@ class Gerber():
                     if(mod_count >= 5):
                         self.apature_def.Y_hole_dim = apature_mods[4] 
                         
-                if(self.apature_def.apature_type == GerberConstants.ad_macro): #another bad fix to catch the OC8 macro diameter
-                    #GerberConstants.ad_macro is currently "8" and will only catch aperture macros titled xx8
-                       
-                    if(mod_count >= 1): 
-                        self.apature_def.outside_diameter = apature_mods[0]
-                        
-                    if(mod_count >= 2):
-                        self.apature_def.side_count =  apature_mods[1] 
-                    
                 self.apature_definitions[self.apature_def.d_code] =  self.apature_def
-            
-            #added -- This is to catch the aperture macro. am_command is triggered by AMOC8
-            #command_type in this case is "5," and specifies a regular polygon
-            if ( am_command == True ): 
-                am_command == False
-                am_parameters = command_data.split(',')
-                self.apature_macro.am_type = command_type.strip(',')
-                self.apature_macro.onoff = am_parameters[0]
-                self.apature_macro.vertices = am_parameters[1]
-                self.apature_macro.X_center = am_parameters[2]
-                self.apature_macro.Y_center = am_parameters[3]
-                self.apature_macro.diameter = am_parameters[4].split('X')[0] #crappy fix - not sure what the 1.08239 means. 
-                #diameter is not currently used. instead, the draw_polygon function grabs the apature def diameter.
-                self.apature_macro.rotation = am_parameters[5]
+                #self.apature_def.macro = self.apature_macros[ the macro name goes here ]
+ 
                 
-            if( command_type == GerberConstants.p_apature_macro):
-                #added
-                self.apature_macro = GerberApatureMacro()
-                self.apature_macro.am_code = command_data
-                am_command = True
-                
-            if( command_type == GerberConstants.p_layer_polarity):
+            if( command_type == GerberConstants.p_layer_polarity ):
                 self.layer_polarity = GerberLayerPolarity();
                 self.layer_polarity.layer_polarity = command_data 
                 
-            if( command_type == GerberConstants.p_image_polarity): 
+            if( command_type == GerberConstants.p_image_polarity ): 
                 self.image_polarity = GerberImagePolarity() 
                 self.image_polarity.image_polarity = command_data
                 
@@ -450,7 +527,123 @@ class Gerber():
                 
             gerber_commands.append(gerber_command)
         return gerber_commands
-                       
+                 
+   
+    ########################
+    #
+    ########################
+    def parse_macros(self, command_data):
+        
+        ################## 
+        # The macros come before the ADs in the gerber files
+        # Below we're going to build up a hash tables of macro names to macro objects
+        # then we'll do a look up in the table and assigne the macro object as needed
+        # for output For each of the ADs 
+        # Well have to make a macro -> tool path conversion utility for output
+        # because macros can be dynamic each of these will have to be evaluated at output time 
+        # yar 
+        ##################
+    
+        macro = GerberApatureMacro()
+        
+        split_macro = self.split_commands( command_data )
+
+        macro_header = split_macro[0] 
+     
+        if( len(macro_header) > 2 ):
+            macro.am_name = macro_header[2:]
+        
+        macro_blocks = split_macro[1:]
+    
+        for macro_block in macro_blocks:
+            
+            macro_part = GerberApatureBlock()
+            macro_parts = macro_block.split(',')
+            macro_type = macro_parts[0]
+            
+            macro_data = None
+            
+            macro_part.block_type = macro_type
+            
+            if( macro_type == GerberConstants.am_circle):
+                macro_data = GerberApatureCircle()
+                macro_data.exposure = macro_parts[1]
+                macro_data.diameter = macro_parts[2] 
+                macro_data.x_center = macro_parts[3]
+                macro_data.y_center = macro_parts[4]
+                
+            if( macro_type == GerberConstants.am_line_vector_alt or
+                macro_type == GerberConstants.am_line_vector ):
+                macro_data = GerberApatureLine()
+                macro_data.exposure = macro_parts[1]
+                macro_data.line_width = macro_parts[2]
+                macro_data.x_start = macro_parts[3]
+                macro_data.y_start = macro_parts[4]
+                macro_data.x_end = macro_parts[5]
+                macro_data.y_end = macro_parts[6]
+                macro_data.rotation = macro_parts[7]
+                
+            if( macro_type == GerberConstants.am_line_center ):
+                macro_data = GerberApatureLine()
+                macro_data.exposure = macro_parts[1]
+                macro_data.width = macro_parts[2]
+                macro_data.height = macro_parts[3]
+                macro_data.x_center = macro_parts[4]
+                macro_data.y_center = macro_parts[5]
+                macro_data.rotation = macro_parts[6]
+                
+           
+            if( macro_type == GerberConstants.am_line_lower_left ): 
+                macro_data = GerberApatureLine()
+                macro_data.exposure = macro_parts[1]
+                macro_data.width = macro_parts[2]
+                macro_data.height = macro_parts[3]
+                macro_data.x_start = macro_parts[4]
+                macro_data.y_start = macro_parts[5]
+                macro_data.rotation = macro_parts[6]
+                
+            if( macro_type == GerberConstants.am_outline ): 
+                macro_data = GerberApatureOutline()
+                macro_data.point_count = macro_parts[1]
+               #TODO: finish parsing points to array  
+                
+            if( macro_type == GerberConstants.am_polygon ): 
+                macro_data = GerberApaturePolygon() 
+                macro_data.exposure = macro_parts[1] 
+                macro_data.vertice_count = macro_parts[2]
+                macro_data.x_center = macro_parts[3]
+                macro_data.y_center = macro_parts[4]
+                macro_data.diameter = macro_parts[5]
+                macro_data.rotation = macro_parts[6]
+                
+            if( macro_type == GerberConstants.am_morie ): 
+                macro_data = GerberApatureMorie()
+                macro_data.x_center = macro_parts[1]
+                macro_data.y_center = macro_parts[2]
+                macro_data.outside_diameter = macro_parts[3]
+                macro_data.inside_diameter = macro_parts[4]
+                macro_data.gap_thickness = macro_parts[5]
+                macro_data.number_of_circles = macro_parts[6]
+                macro_data.cross_hair_thickness = macro_parts[7]
+                macro_data.cross_hair_length = macro_parts[8] 
+                macro_data.rotation = macro_parts[9] 
+                
+            if( macro_type == GerberConstants.am_thermal ): 
+                macro_data = GerberApatureThermal()
+                macro_data.x_center = macro_parts[1]
+                macro_data.y_center = macro_parts[2]
+                macro_data.outside_diameter = macro_parts[3]
+                macro_data.inside_diameter = macro_parts[4]
+                macro_data.cross_hair_thickness = macro_parts[5]
+                macro_data.rotation = macro_parts[6] 
+                
+            macro_part.data = macro_data 
+            macro.am_blocks.append(macro_part)
+           
+        ## add the macro 
+        self.apature_macros[macro.am_name] = macro
+          
+            
     ###################################
     #
     ###################################
@@ -499,7 +692,6 @@ class Gerber():
         return gerber_commands
     
     
-             
     ###################################
     #
     ###################################
@@ -549,6 +741,9 @@ class Gerber():
            
         return gerber_commands
     
+    ##########################
+    #
+    ##########################
     def output_rectangle_GCODE(self, x_pos, y_pos, x_dim, y_dim, x_hole_dim, y_hole_dim):
         
         if ( x_dim != None and y_dim != None ):
@@ -576,6 +771,9 @@ class Gerber():
             
         self.output_hole_GCODE(x_pos, y_pos, x_hole_dim, y_hole_dim)
                 
+    #############################
+    #
+    #############################
     
     def output_circle_GCODE(self, x_pos, y_pos, outer_diameter, x_hole_dim, y_hole_dim) :
         
@@ -599,7 +797,11 @@ class Gerber():
             
         self.output_hole_GCODE(x_pos, y_pos, x_hole_dim, y_hole_dim)
             
-            
+   
+    #############################
+    #
+    #############################
+    
     def output_oval_GCODE(self, x_pos, y_pos, x_dim, y_dim, x_hole_dim, y_hole_dim) :
         
         if (x_dim != None and y_dim != None) :
@@ -669,8 +871,10 @@ class Gerber():
                 
             
             self.output_hole_GCODE(x_pos, y_pos, x_hole_dim, y_hole_dim)
-            
-    
+             
+    #################################
+    #
+    ################################
     def output_polygon_GCODE(self, x_pos, y_pos, vertices, diameter, rotation) :
         theta = math.radians(360/float(vertices))
         phi = math.radians(float(rotation))
@@ -735,7 +939,10 @@ class Gerber():
                 print "G4 P%d" %self.stop_delay 
                 print "G1 X" + str(x_pos) + " Y" + str(y_pos) + " F" + self.feed_rate
                 
-    
+   
+    ###################################
+    #
+    ###################################
     def output_rect_fill_GCODE(self, x_pos, y_pos, x_dim, y_dim, x_hole_dim, y_hole_dim) :
         #check values
         if x_dim != None and y_dim != None:
@@ -761,7 +968,10 @@ class Gerber():
             #        fill_current_y_dim -= self.line_width
                 #circular fill up to rectangle?
                 
-                
+               
+    #########################################
+    #
+    #########################################
     def output_circle_fill_GCODE(self, x_pos, y_pos, outer_diameter, x_hole_dim, y_hole_dim) :
         #check values
         if outer_diameter != None:
@@ -850,18 +1060,12 @@ class Gerber():
                     if( gerber_command.command.d == GerberConstants.d_flash_aperature ):
                         if apature_def.apature_type == "R" :
                             print "(RECTANGLE)"
-                            #self.output_rectangle_GCODE(float(current_x_pos), float(current_y_pos), 
-                            #                            apature_def.X_dim, apature_def.Y_dim, 
-                            #                            apature_def.X_hole_dim, apature_def.Y_hole_dim)
                             self.output_rect_fill_GCODE(float(current_x_pos), float(current_y_pos), 
                                                         apature_def.X_dim, apature_def.Y_dim, 
                                                         apature_def.X_hole_dim, apature_def.Y_hole_dim)
                             
                         if apature_def.apature_type == "C" :
                             print "(CIRCLE)"
-                            #self.output_circle_GCODE(float(current_x_pos), float(current_y_pos), 
-                            #                            apature_def.outside_diameter,
-                            #                            apature_def.X_hole_dim, apature_def.Y_hole_dim)
                             self.output_circle_fill_GCODE(float(current_x_pos), float(current_y_pos), 
                                                         apature_def.outside_diameter,
                                                         apature_def.X_hole_dim, apature_def.Y_hole_dim)
@@ -871,14 +1075,14 @@ class Gerber():
                             self.output_oval_GCODE(float(current_x_pos), float(current_y_pos), 
                                                    apature_def.X_dim, apature_def.Y_dim, 
                                                    apature_def.X_hole_dim, apature_def.Y_hole_dim)
-                        # this is to catch the OC8 macro    
-                        if apature_def.apature_type == "8" : #really crappy solution
-                            print "(AM POLYGON)"
-                            self.output_polygon_GCODE(float(current_x_pos), float(current_y_pos),
-                                                      float(self.apature_macro.vertices), float(apature_def.outside_diameter),
-                                                      float(self.apature_macro.rotation))
-                            #the diameter parameter of the aperture macro is formatted like 1.08239X$1 where $1 represents
-                            #the apature_def.outside_diameter. I don't know what the 1.08239 means.
+                            
+                        
+                        #if apature_def.macro = self.apature_macros["OC8"]
+                        #    print "(AM POLYGON)"
+                        #    self.output_polygon_GCODE(float(current_x_pos), float(current_y_pos),
+                        #                              float(self.apature_macro.vertices), float(apature_def.outside_diameter),
+                        #                              float(self.apature_macro.rotation))
+                           
                             
                 
             if( gerber_command.command_type == "g" ):
@@ -907,6 +1111,7 @@ class Gerber():
                     print "M300 S%d (pen up)" %self.servo_up
                     print "G4 P500"
                     print "G1 X0 Y0 F3500.00 (end of program, go home)"
+                    print "M300 S255 (turn off servo)"
                         
                         
                 

@@ -30,20 +30,21 @@ class GCodeContext:
 	
 	print
 	print "(end of print job)"
-	print "M300 S50"
+	print "M300 S40 (pen up)"
 	print "G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay)
+	print "M300 S255 (turn off servo)"
 	print "G1 X0 Y0 F3500.00"
 	print "G92 Z15 F150.00 (go up to finished level)"
 	print "G92 X0 Y0 Z15 F150.00 (go up to finished level)"
 	print "M18 (drives off)"
 
     def start(self):
-		self.codes.append("M300 S40 (pen down)")
+		self.codes.append("M300 S30 (pen down)")
 		self.codes.append("G4 P%d (wait %dms)" % (self.start_delay, self.start_delay))
 		self.drawing = True
 
     def stop(self):
-		self.codes.append("M300 S50 (pen up)")
+		self.codes.append("M300 S40 (pen up)")
 		self.codes.append("G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay))
 		self.drawing = False
 
@@ -54,7 +55,7 @@ class GCodeContext:
                 return
         else:
                 if self.drawing: 
-                    self.codes.append("M300 S50 (pen up)") 
+                    self.codes.append("M300 S40 (pen up)") 
                     self.codes.append("G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay))
                     self.drawing = False
                     
@@ -69,7 +70,7 @@ class GCodeContext:
 		return
         else:
                 if self.drawing == False:
-                    self.codes.append("M300 S40 (pen down)")
+                    self.codes.append("M300 S30 (pen down)")
                     self.codes.append("G4 P%d (wait %dms)" % (self.start_delay, self.start_delay))
                     self.drawing = True
                     

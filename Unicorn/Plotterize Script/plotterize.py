@@ -153,13 +153,13 @@ class Plotterizer:
 
 			print "(border outline)"
 			self.go_to_point(min_x, max_y, self.z_height, self.xy_feedrate)
-			print "M300 S40 (pen down)"
+			print "M300 S30 (pen down)"
 			print "G4 P%d (wait %dms)" % (self.start_delay, self.start_delay)
 			self.go_to_point(max_x, max_y, self.z_height, self.xy_feedrate)
 			self.go_to_point(max_x, min_y, self.z_height, self.xy_feedrate)
 			self.go_to_point(min_x, min_y, self.z_height, self.xy_feedrate)
 			self.go_to_point(min_x, max_y - self.stop_distance, self.z_height, self.xy_feedrate)
-			print "M300 S50 (pen up)"
+			print "M300 S40 (pen up)"
 			self.go_to_point(min_x, max_y, self.z_height, self.xy_feedrate)
 			print "G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay)
 			print
@@ -184,16 +184,16 @@ class Plotterizer:
 
 						print "(line from %.2f to %.2f at %.2f)" % (actual_start, actual_end, actual_y)
 						self.go_to_point(actual_start, actual_y, self.z_height, 3500) #fast feedrate
-						print "M300 S40 (pen down)"
+						print "M300 S30 (pen down)"
 						print "G4 P%d (wait %dms)" % (self.start_delay, self.start_delay)
 						
 						if (abs(actual_end - actual_start) > self.stop_distance):
 							self.go_to_point(actual_end-self.stop_distance, actual_y, self.z_height, self.xy_feedrate)
-							print "M300 S50 (pen up)"
+							print "M300 S40 (pen up)"
 							self.go_to_point(actual_end, actual_y, self.z_height, self.xy_feedrate)
 						else:
 							self.go_to_point(actual_end, actual_y, self.z_height, self.xy_feedrate)
-							print "M300 S50 (pen up)"
+							print "M300 S40 (pen up)"
 						print "G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay)
 						print
 
@@ -203,19 +203,20 @@ class Plotterizer:
 						
 						print "(dot at %.2f, %.2f)" % (actual_x, actual_y)
                                                 self.go_to_point(actual_x, actual_y, self.z_height, self.xy_feedrate)
-						print "M300 S40 (pen down)"
+						print "M300 S30 (pen down)"
 						print "G4 P%d (wait %dms)" % (self.dot_delay, self.dot_delay)
-						print "M300 S50 (pen up)"
+						print "M300 S40 (pen up)"
 						print "G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay)
 						print
 				x = x+1
 
 		print
 		print "(end of print job)"
-		print "M300 S50 (pen up)"
+		print "M300 S40 (pen up)"
 		self.go_to_point(self.current_x, self.current_y, 15, self.xy_feedrate)
 		self.go_to_point(0, 0, 15, self.xy_feedrate)
 		print "M18 (drives off)"
+		print "M300 S255 (turn off servo)"
 		
 	def go_to_point(self, x, y, z, feedrate):
 		"Output a move to a point"

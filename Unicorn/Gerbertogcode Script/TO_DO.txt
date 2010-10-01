@@ -1,0 +1,152 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf320
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww9000\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\ql\qnatural
+
+\f0\fs32 \cf0 Gerbertogcode.py TO-DO:
+\fs24 \
+\
+
+\b 09/20/10 - Adam Cecchetti writes:
+\b0 \
+Attached are updated Gerber.py and GerberConstants.py files. These are\
+updated to parse the macro information into macro data container\
+classes. Similar to what I did with AD definitions.\
+\
+I've stored all of the macro in a hash table based on their name so for\
+instance to get a macro back by name.\
+\
+self.apature_macros["OC8"]\
+\
+will return you the GerberApatureMacro object that will contain a name\
+and a block array. Since a macro can be made of many blocks I've made an\
+array you can iterate.\
+\
+The data object tree looks like this.\
+\
+GerberApatureMacro\
+\'a0\'a0name\
+\'a0\'a0blocks[]\
+\
+the block array is filled with\
+\
+GerberApatureBlock\
+\'a0type\
+\'a0data\
+\
+The data can be any of the following classes each that store the\
+parameters for their respective class.\
+\
+GerberApatureCircle\
+GerberApatureLine\
+GerberApaturePolygon\
+GerberApatureMorie\
+GerberApatureThermal\
+GerberApatureOutline\
+\
+\
+The only one I don't properly parse right now is outline.\
+\
+The next steps for you are.\
+\
+1. Parse the macro name form the Apature def and assign the macro object\
+from the hash table. This should be as simple as\
+\
+apature_def.macro = self.apature_macros[macro_name]\
+\
+You started to do this before but I ripped it out because it was causing\
+all kinds of issues with the new code. Do this around line 497 in Gerber.py\
+\
+\
+2. When you go to draw a GECODE you'll have to parse the gerber macro\
+objects and fill in the variances for the macros. According to the spec\
+the macros are dynamic and can be update per apature definition. this\
+means that our current macro.\
+\
+%AMOC8*5,1,8,0,0,1.08239X$1,22.5*%\
+\
+Parses to\
+Type 5 : polygon\
+exposure : 1 : on\
+# verts \'a0: 8\
+x_center : 0\
+y_center : 0\
+diameter: 1.08238 X $1\
+rotation: 22.5 degrees\
+\
+The 1.08238 X $1 means that an operation is performed by the ad that\
+implements it. Currently 6 different mathmatical opperations are\
+supported by gerber files.\
+\
++ add\
+- - subtrace\
+= assign\
+/ divide\
+X multiply\
+n numerical factor\
+Thus our macro is going to multiple 1.08238 by whatever $1 is.\
+\
+$1 comes from the AD defs.\
+\
+There are 4 ADs that use this macro in the gerber file you provided.\
+\
+%ADD13OC8,0.0700*%\
+%ADD17OC8,0.0520*%\
+%ADD18OC8,0.0850*%\
+%ADD19OC8,0.0660*%\
+\
+13,17,18, and 19\
+\
+So how the above parses is\
+\
+ADD13 uses macro OC8 with a $1 parameter of 0.0700\
+\
+so the new parameter for the macro diameter becomes\
+diameter: 1.08238 X 0.0700\
+\
+for 17 its\
+diameter: 1.08238 & 0.0520\
+\
+so on an so forth.\
+\
+Because this changes dynamically....\
+\
+You'll have to code two things to make this work.\
+\
+1. properly parse both the macro name that is required and the\
+parameters into an array. You might want to add a parameter array\
+property to the GerberApatureDefintion object so you can easily refernce\
+them\
+\
+class GerberApatureDefintion():\
+\'a0\'a0\'a0def __init__(self):\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.d_code = None\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.X_dim \'a0= None\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.X_hole_dim = None\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.Y_dim \'a0= None\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.Y_hole_dim = None\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.macro = None\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.apature_type = None\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.outside_diameter = None\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.side_count = None\
+\
+maybe add something like this\
+\'a0\'a0\'a0\'a0\'a0\'a0\'a0self.macro_params = []\
+\
+Then when you see a AD that needs a macro object just do a split(',')\
+to get the params dumped into the array. That way (after you've coded\
+part 2) you can access them like this.\
+\
+apature_def.macro_params[0]\
+\
+(which would be what you want to replace $1 with)\
+\
+2. The gcode conversion of the actual shape.\
+\
+To make the robot board work you'll have to write a function that takes\
+the params from the macro and draws an 8 point polygon in gcode.\
+\
+You'll have to write one of these for each macro type\
+circle,line,poly,outline etc that you want to support.}
