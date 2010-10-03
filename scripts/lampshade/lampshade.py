@@ -48,8 +48,45 @@ G91
 G1 Z10
 """
 
+suffixABP = """
+(end of the file, cooldown routines)
+G1 X0 Y50 F3300.0 (move to ejection position)
+M106 (conveyor on)
+G04 P10000 (wait 10 seconds)
+M107 (conveyor off)
+G1 X0 Y0 F3300.0 (recenter platform)
+G1 X0 Y0 Z0 F3300.0 (recenter platform)
+M104 S0 (shut off extruder if last cycle)
+(CYCLE BEGINS ANEW)
+"""
+
 
 # Do not edit
+
+def makeSpiralPoints(radius):
+    "Returns an array of points defining a spiral from the inside out"
+    global extrusionWidth
+    segmentLen = 2.0
+    last = (0,0)
+    points = [last]
+    theta = math.pi/2
+    r = theta * extrusionWidth / (2*math.pi)
+    while r <= radius:
+        points.append( (r*math.cos(theta), r*math.sin(theta)) )
+        tDelta = math.atan( segmentLen / r )
+        theta = theta + tDelta
+        r = theta * extrusionWidth / (2*math.pi)
+    return points
+
+def makeBottom(layer):
+    "Generate a spiral bottom"
+    global rBottomMm
+    z = layerHeight * layer
+    points = makeSpiralPoints(rBottomMm)
+    if (layer % 2) == 0:
+        points.reverse()
+    for p in points:
+        print "G1 X%f Y%f Z%f F%f" % (p[0],p[1],z,baseFeedrate)
 
 def init():
     global layerCount, rDeltaPerLayer, anglePerSegment
@@ -62,9 +99,10 @@ def init():
 
 def getXYZ(layer,segment):
     global continuous
+    global bottom
     r = rBottomMm + (rDeltaPerLayer*layer)
     angle = anglePerSegment * segment
-    z = layerHeight * layer
+    z = bottom + (layerHeight * layer)
     if continuous:
         z = z + (layerHeight * (float(segment)/segments))
     x = -math.sin(angle) * r
@@ -81,13 +119,18 @@ def makeSegment(layer, segment, value, earlyShutoff = 0):
 def makeShape():
     print prefix
     print "M101"
+    for i in range(0,bottomLayers):
+        makeBottom(i)
     for layer in range(0,int(layerCount)):
         for segment in range(0, segments):
             x = segment
             y = (im.size[1] - int(float(im.size[1]*layer)/layerCount)) - 1
             print makeSegment(layer, segment, pixels[x,y]/256.0)
     print "M103"
-    print suffix
+    if abp:
+        print suffixABP
+    else:
+        print suffix
 
 
 usage = "usage: %prog [options] image.png"
@@ -109,9 +152,16 @@ parser.add_option("-H","--height",type="float",dest="height",
 parser.add_option("-c","--continuous",action="store_true",dest="continuous",
                   help="use continuous Z movement",
                   default=False)
+parser.add_option("-a","--ABP",action="store_true",dest="abp",
+                  help="use automated build platform",
+                  default=False)
+parser.add_option("--bottom-layers",type="int",dest="bottom",
+                  help="number of layers in the floor",
+                  default=0)
 parser.add_option("-f","--feedrate",type="float",dest="feedrate",
                   help="set the base feedrate",
                   default=34.5)
+#parser.add_option("--rexp",type="string"
 (options,args) = parser.parse_args()
 
 if len(args) != 1:
@@ -119,6 +169,8 @@ if len(args) != 1:
     parser.print_help()
     exit()
 
+extrusionWidth = 0.5
+bottomLayers = options.bottom
 rBottomMm = options.rbot
 rTopMm = options.rtop
 layerHeight = options.layerheight
@@ -132,6 +184,8 @@ continuous = options.continuous
 im = Image.open(args[0]).convert("L")
 pixels = im.load()
 segments = max(20,im.size[0])
+bottom = bottomLayers * layerHeight
+abp = options.abp
 
 init()
 makeShape()
