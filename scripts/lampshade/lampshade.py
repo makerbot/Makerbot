@@ -82,7 +82,7 @@ def makeBottom(layer):
     "Generate a spiral bottom"
     global rBottomMm
     z = layerHeight * layer
-    points = makeSpiralPoints(rBottomMm)
+    points = makeSpiralPoints(rBottomMm+extrusionWidth)
     if (layer % 2) == 0:
         points.reverse()
     for p in points:
@@ -97,7 +97,7 @@ def init():
     anglePerSegment = 2*math.pi/segments
     baseFeedrate = feedrateInMmPerS * 60.0
 
-def getXYZ(layer,segment):
+def getXYZ(layer,segment,roff=0.0):
     global continuous
     global bottom
     r = rBottomMm + (rDeltaPerLayer*layer)
@@ -119,8 +119,20 @@ def makeSegment(layer, segment, value, earlyShutoff = 0):
 def makeShape():
     print prefix
     print "M101"
+    print "(Base)"
     for i in range(0,bottomLayers):
         makeBottom(i)
+    if bottomLayers > 0:
+        # add single-layer seal
+        print "(Adding seal along bottom)"
+        for segment in range(0, segments):
+            r = rBottomMm - extrusionWidth
+            angle = anglePerSegment * segment
+            z = bottom + layerHeight
+            x = -math.sin(angle) * r
+            y = math.cos(angle) * r
+            print "G1 X%f Y%f Z%f F%f" % (x,y,z,baseFeedrate)
+    print "(Sides)"
     for layer in range(0,int(layerCount)):
         for segment in range(0, segments):
             x = segment
