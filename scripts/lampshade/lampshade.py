@@ -28,14 +28,9 @@ M104 S220 T0 (Temperature to 220 celsius)
 G21 (Metric FTW)
 G90 (Absolute Positioning)
 G92 X0 Y0 Z0 (You are now at 0,0,0)
-(You have failed me for the last time, MakerBot)
 G0 Z15 (Move up for test extrusion)
 M108 S255 (Extruder speed = max)
 M6 T0 (Wait for tool to heat up)
-G04 P5000 (Wait 5 seconds)
-M101 (Extruder on, forward)
-G04 P5000 (Wait 5 seconds)
-M103 (Extruder off)
 M01 (The heater is warming up and will do a test extrusion.  Click yes after you have cleared the nozzle of the extrusion.)
 G0 Z0	(Go back to zero.)
 (end of start.)
@@ -161,6 +156,9 @@ parser.add_option("--rbot",type="float",dest="rbot",
 parser.add_option("-H","--height",type="float",dest="height",
                   help="set the height of the shade",
                   default=40.0)
+parser.add_option("-s","--speed-factor",type="float",dest="speedfactor",
+                  help="the factor to multiply the feedrate by for a completely dark pixel",
+                  default=0.65)
 parser.add_option("-c","--continuous",action="store_true",dest="continuous",
                   help="use continuous Z movement",
                   default=False)
@@ -191,7 +189,7 @@ feedrateInMmPerS = options.feedrate
 if options.radius:
     rBottomMm = options.radius
     rTopMm = options.radius
-maxAdjustment = 0.49
+maxAdjustment = options.speedfactor
 continuous = options.continuous
 im = Image.open(args[0]).convert("L")
 pixels = im.load()
