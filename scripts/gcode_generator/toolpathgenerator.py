@@ -1,13 +1,12 @@
 from string import Template
 
-startup = '''\
+defaultStartCode = '''\
 (begin of startup)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 M108 R1.8 (set extruder speed to maximum)
 M104 S230 T0 (set extruder temperature)
 M109 S125 T0 (set heated-build-platform temperature)
-M106 (Turn extruder stepper fan on)
 (**** end initilization commands ****)
 (**** begin homing ****)
 G162 Z F500 (home Z axis maximum)
@@ -25,12 +24,11 @@ G1 X0 Y0 Z10.0 F3300.0 (move to a safe starting position)
 (end of startup)
 '''
 
-shutdown = '''\
+defaultShutdownCode = '''\
 (begin of shutdown)
 M104 S0 T0 (shut off extruder)
 M109 S0 T0 (shut off heated-build-platform)
 G1 X0 Y0 Z20.0 F3300.0 (move to a safe ending position)
-M107 (turn extruder stepper fan off)
 (end of shutdown)
 '''
 
@@ -53,13 +51,17 @@ class ToolpathGenerator:
 		self.yPos = 0
 		self.zPos = 10
 		
-	def open(self, filename):
+	def open(self, filename, startcode=""):
+		if (startcode==""):
+			startcode = defaultStartCode
 		self.filename = filename
 		self.output = open(self.filename, 'w')
-		self.output.write(startup)
+		self.output.write(startcode)
 		
-	def close(self):
-		self.output.write(shutdown)
+	def close(self, shutdowncode=""):
+		if (shutdowncode==""):
+			shutdowncode = defaultShutdownCode
+		self.output.write(shutdowncode)
 		self.output.close()
 	
 	def moveToXY(self, X, Y, S):		
