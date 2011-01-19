@@ -1,13 +1,13 @@
 from toolpathgenerator import *
 from string import Template
 
-rpmTemplate = Template('R$rpm\n')
-dwellTemplate = Template('G4 $time\n')
+rpmTemplate = Template('M108 R$rpm\n')
+dwellTemplate = Template('G4 P$time\n')
 
 
-shakeRPM = 1.8
+shakeRPM = 5
 shakePeriod = 200
-shakeCount = 30
+shakeCount = 500
 
 gen = ToolpathGenerator()
 gen.open('shake_test.gcode')
