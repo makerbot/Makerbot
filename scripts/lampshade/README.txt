@@ -19,18 +19,21 @@ python ./lampshade.py -h
 The demo files in the patterns directory were made with the following
 parameters:
 
-python ./lampshade.py --rtop=23 --rbot=30 -H 80 patterns/earth.png >patterns/earth.gcode
+python ./lampshade.py -c --rtop=23 --rbot=30 -H 80 patterns/earth.png >patterns/earth.gcode
 
-python ./lampshade.py -r 30 -H 60 patterns/fleur.png >patterns/fleur.gcode
+python ./lampshade.py -c -r 30 -H 60 patterns/fleur.png >patterns/fleur.gcode
 
-python /lampshade.py -r 30 -H 80 patterns/tiles.png >patterns/tiles.gcode
+python /lampshade.py -c -r 30 -H 80 patterns/tiles.png >patterns/tiles.gcode
 
-These gcodes will generate a small "seam" along one edge of the
-printed object.  If you want to do a "seamless" print, just add the
-"-c" flag to the command line.  A word of warning: "seamless" prints
-will probably not work correctly in versions of ReplicatorG earlier
-than 0019 (small, discontinuous seams will be generated all around the
-object!).
+The "-c" flag is important if you want to do "seamless" (spiral) prints.
+Older versions of the firmware and ReplicatorG didn't support continuous
+concurrent Z motion well, and so this was not the default at the time the
+script was written.
+
+New in the latest version of the script is the "bottom-layers" parameter.
+This will close the bottom of the shade with a spiral bottom, giving you a
+cup.  (This feature was used to create the records in our April Fool's Day
+prank.)
 
 Good luck, and have fun!
 -a
