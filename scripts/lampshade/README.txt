@@ -37,3 +37,19 @@ prank.)
 
 Good luck, and have fun!
 -a
+
+==== Troubleshooting ====
+
+Q: It says something about "Cannot find module Image", what should I do?
+A: You probably don't have PIL (Python Image Library).
+ You can install this from a terminal. With Ubuntu you can apt-get python-pil. On Linux and the Mac you can compile this yourself.
+
+ $ wget http://effbot.org/media/downloads/Imaging-1.1.7.tar.gz
+(or look for a newer version here: http://effbot.org/downloads/#pil )
+ $ tar xzf Imaging-1.1.7.tar.gz
+ $ cd Imaging-1.1.7
+ $ python setup.py build
+ $ sudo python setup.py install
+
+
+

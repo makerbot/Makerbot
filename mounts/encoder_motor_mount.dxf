@@ -47,7 +47,7 @@ Standard
   9
 $CLAYER
   8
-documentation
+plate A
   9
 $DIMEXO
  40
@@ -59,7 +59,7 @@ $DIMTXT
   9
 $CLAYER
   8
-plate A
+profile-layers
   0
 ENDSEC
   0
@@ -2325,7 +2325,7 @@ AcDbDimension
  71
 5
  72
-0
+1
  41
 1.0
  42
@@ -2381,7 +2381,7 @@ AcDbDimension
  71
 5
  72
-0
+1
  41
 1.0
  42
@@ -3721,7 +3721,7 @@ normal
  50
 0.0
  73
-0
+1
  44
 1.0
   0
@@ -3761,7 +3761,7 @@ normal
  50
 0.0
  73
-0
+1
  44
 1.0
   0
@@ -3801,7 +3801,7 @@ normal
  50
 0.0
  73
-0
+1
  44
 1.0
   0
@@ -3841,7 +3841,7 @@ normal
  50
 0.0
  73
-0
+1
  44
 1.0
   0
@@ -4017,6 +4017,62 @@ AcDbArc
  51
 111.5179195494277025
   0
+DIMENSION
+  5
+A4
+100
+AcDbEntity
+  8
+profile-layers
+ 62
+256
+370
+-1
+  6
+ByLayer
+100
+AcDbDimension
+ 10
+52.2421203438398294
+ 20
+57.4750000000000014
+ 30
+0.0
+ 11
+50.3671203438398294
+ 21
+46.2374999999999972
+ 31
+0.0
+ 70
+1
+ 71
+5
+ 72
+1
+ 41
+1.0
+ 42
+0.0
+  1
+
+  3
+Standard
+100
+AcDbAlignedDimension
+ 13
+60.0
+ 23
+57.4750000000000014
+ 33
+0.0
+ 14
+60.0
+ 24
+35.0
+ 34
+0.0
+  0
 ENDSEC
   0
 SECTION
@@ -4055,7 +4111,7 @@ E
   3
 AcDbVariableDictionary
 350
-A4
+A5
   0
 DICTIONARY
   5
@@ -4519,7 +4575,7 @@ Layout2
   0
 DICTIONARY
   5
-A4
+A5
 100
 AcDbDictionary
 281
@@ -4527,15 +4583,15 @@ AcDbDictionary
   3
 DIMASSOC
 350
-A6
+A7
   3
 HIDETEXT
 350
-A5
+A6
   0
 DICTIONARYVAR
   5
-A5
+A6
 100
 DictionaryVariables
 280
@@ -4545,7 +4601,7 @@ DictionaryVariables
   0
 DICTIONARYVAR
   5
-A6
+A7
 100
 DictionaryVariables
 280
