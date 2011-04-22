@@ -42,7 +42,11 @@ G1 Z5.0 (head down)
 M103 (extruder off)
 '''
 
+promptTemplate = Template('M1 ($msg)\n')
+
 moveXYPointTemplate = Template('G1 X$xpos Y$ypos F$speed (move to point)\n')
+
+moveXYZPointTemplate = Template('G1 X$xpos Y$ypos Z$zpos F$speed (move to point)\n')
 
 class ToolpathGenerator:
 	""" simple state machine for a gcode generator """
@@ -58,14 +62,18 @@ class ToolpathGenerator:
 		self.output = open(self.filename, 'w')
 		self.output.write(startcode)
 		
-	def close(self, shutdowncode=""):
-		if (shutdowncode==""):
-			shutdowncode = defaultShutdownCode
+	def close(self, shutdowncode=defaultShutdownCode):
 		self.output.write(shutdowncode)
 		self.output.close()
 	
 	def moveToXY(self, X, Y, S):		
 		self.output.write(moveXYPointTemplate.substitute(xpos=X, ypos=Y, speed=S))
+
+	def moveToXYZ(self, X, Y, Z, S):		
+		self.output.write(moveXYZPointTemplate.substitute(xpos=X, ypos=Y, zpos=Z, speed=S))
+
+	def prompt(self, message=""):
+		self.output.write(promptTemplate.substitute(msg=message))
 		
 	def engageTool(self):
 		self.output.write(engageTool)
