@@ -136,9 +136,9 @@ usage = "usage: %prog [options] image.png"
 parser = OptionParser(usage = usage)
 parser.add_option("-o","--output-file",type="string",dest="outputFile",
                   help="output filename (default is standard output)",default="out.gcode")
-parser.add_option("-p","--prefix",type="string",dest="prefixFile",
+parser.add_option("-P","--prefix",type="string",dest="prefixFile",
                   help="prefix file",default=prefixFile)
-parser.add_option("-s","--suffix",type="string",dest="suffixFile",
+parser.add_option("-S","--suffix",type="string",dest="suffixFile",
                   help="the suffix file, will be added at the end.",default=suffixFile)
 parser.add_option("-r","--radius",type="float",dest="radius",
                   help="set the top and bottom radius of a right cylinder")
