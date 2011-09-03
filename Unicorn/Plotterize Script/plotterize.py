@@ -277,7 +277,7 @@ def main(argv):
 			z_feedrate = float(arg)
 		elif opt in ("--z-height"):
 			z_height = float(arg)
-		elif opt in ("-xy-feedrate"):
+		elif opt in ("--xy-feedrate"):
 			xy_feedrate = float(arg)
 		elif opt in ("--width"):
 			width = float(arg)
